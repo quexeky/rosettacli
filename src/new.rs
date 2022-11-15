@@ -4,73 +4,38 @@ use std::path::{Path, PathBuf};
 use std::process::exit;
 use colored::Colorize;
 use serde::{Serialize, Deserialize};
+use crate::new::common_commands::get_input;
 
 
 pub fn generate(path: &Path, force: bool, silent: bool, overwrite: bool) -> bool {
 
-    if !path.is_dir() { println!("Please give destination directory, not a file"); return false; }
+    if !path.is_dir() { println!("Please give destination directory"); return false; }
+    let project_directory: &str = path.components().last().unwrap().as_os_str().to_str().unwrap();
 
-    if fs::read_dir(path).unwrap().count() != 0 {
-        if overwrite || force {
-            for file in fs::read_dir(path).unwrap() {
-                let file = file.unwrap();
-                let path = file.path();
-                let file_check: bool = file.file_name().into_string().unwrap().ends_with(".ro");
-                if file_check && !force {
-                    println!("Project already exists in folder. Use --force to enable overwriting projects");
-                    return false;
-                } else if file_check && silent { fs::remove_file(&path).expect("Could not remove project files. Aborting"); } else if file_check && force {
-                    let input = common_commands::y_n_getter("Project already exists in directory. Delete old project and continue?", "n");
-                    match input.to_lowercase().trim() {
-                        "y" => {
-                            match fs::remove_file(&path) {
-                                Ok(..) => {}
-                                Err(e) => { println!("{}", e) }
-                            }
-                        },
-                        _ => {
-                            println!("Exiting");
-                            return false;
-                        }
-                    }
-                } else if !file_check {
-                    if !silent {
-                        let input = common_commands::y_n_getter("Directory not empty. Continue?", "n");
-                        match input.as_str() {
-                            "y" => {},
-                            _ => {
-                                println!("Exiting");
-                                return false;
-                            }
-                        }
-                    } else if silent { println!("Continuing in non-empty directory") }
-                }
+    if path.join("main.ro").exists() { println!("File already exists")}
 
-            }
-            for file in fs::read_dir(path) {
-                if file.file_name().into_string().unwrap() == "config.json" {
-                    let input = common_commands::get_input("Configuration file already exists. Use old config file? ", "n");
-                    match input.as_str() {
-                        "y" => {
-                            new_config_file(path.to_path_buf());
-                            continue;
-                        }
-                        _ => {
-                            fs::remove_file(file.path()).expect("Could not delete file. Do you have permission to do that?");
-                            File::create(file.path().join("config.json")).expect("Could not create file. Do you have permission to do that?");
-                            fs::write(file.path().join("config.json"), "").expect("Could not write file. Do you have permission to do that?");
-                            exit(0);
-                        }
-                    }
-                } else { new_config_file(path.to_path_buf()); }
-            }
-            fs::write(path.join("main.ro"), "").expect("Could not create new project. Do you have permission to do that?");
-            println!("Created file main.ro");
+    let project_name: String = get_input("Project Name", project_directory);
+    if project_name.is_ascii() { println!("Project name must use only alphanumeric characters"); return false; }
+    let project_version: String = get_input("Version", project_directory);
+    let project_author: String = get_input("Author", "");
+    let project_description: String = get_input("Description", "");
 
-            println!("Created new project in {:?}", path);
-        }
-        else { println!("Files already exist in directory. Use --overwrite to enable overwriting in directories"); return false }
-    }
+    println!
+    ("\n\
+    Project Name: {}\n\
+    Project Version: {}\n\
+    Author: {}\n\
+    Description: {}",
+     project_name,
+     project_version,
+     project_author,
+     project_description
+    );
+
+
+
+
+
 
 
     return true
@@ -90,36 +55,22 @@ struct Config {
 }
 
 mod common_commands {
-    use std::io;
+    use std::{cmp, io, str};
     use std::io::{stdout, Write};
     use std::process::exit;
+    extern crate termsize;
 
     pub fn get_input(prompt: &str, default: &str) -> String{
-        print!("{} ({})",prompt, default);
-        match stdout().flush() { Ok(..) => {}, Err(..) =>  { panic!() }}
+        let termsize::Size {rows, cols} = termsize::get().unwrap();
+        print!("{} [{}]: ",prompt, default);
+        stdout().flush().unwrap();
         let mut input = String::new();
-        match io::stdin().read_line(&mut input) {
-            Ok(_goes_into_input_above) => {},
-            Err(_no_updates_is_fine) => {},
+        match io::stdin().read_line(&mut input) { Ok(..) => {}, Err(e) => {}, }
+        if input.trim() == "" {
+            stdout().flush().unwrap();
+            return default.to_string()
         }
-        if input.trim() == "" { return default.to_string() }
+        stdout().flush().unwrap();
         input.trim().to_string()
-    }
-    pub fn y_n_getter(prompt: &str, default: &str) -> String{
-        print!("{} ({}) ",prompt, default);
-        match stdout().flush() { Ok(..) => {}, Err(..) =>  { exit(-1) }}
-        let mut input = String::new();
-        match io::stdin().read_line(&mut input) {
-            Ok(..) => {},
-            Err(e) => {
-                println!("{}", e);
-                exit(-1)
-            },
-        }
-        match input.trim().to_lowercase().as_str() {
-            "" => {return default.to_string();}
-            "y" | "yes" => {return "y".to_string()}
-            _ => {return "n".to_string()}
-        }
     }
 }
