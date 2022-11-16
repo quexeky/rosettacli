@@ -2,8 +2,10 @@ extern crate core;
 
 mod new;
 mod packages;
+mod common_commands;
 
 pub mod controller;
+pub mod structures;
 
 use std::path::Path;
 use clap::{arg, Parser, Subcommand};

@@ -1,11 +1,16 @@
 use std::{env, io, str, string, path, fs};
-use std::fs::File;
 use std::path::{Path, PathBuf};
+use std::collections::HashMap;
+use std::fs::File;
 use std::process::exit;
 use colored::Colorize;
 use serde::{Serialize, Deserialize};
-use crate::new::common_commands::get_input;
+use serde_yaml;
+use serde_derive::Deserialize;
+use toml::Value::String;
 
+use crate::common_commands::get_input;
+use crate::structures::config::*;
 
 pub fn generate(path: &Path, force: bool, silent: bool, overwrite: bool) -> bool {
 
@@ -14,63 +19,52 @@ pub fn generate(path: &Path, force: bool, silent: bool, overwrite: bool) -> bool
 
     if path.join("main.ro").exists() { println!("File already exists")}
 
-    let project_name: String = get_input("Project Name", project_directory);
-    if project_name.is_ascii() { println!("Project name must use only alphanumeric characters"); return false; }
-    let project_version: String = get_input("Version", project_directory);
-    let project_author: String = get_input("Author", "");
-    let project_description: String = get_input("Description", "");
+
+
+    //Information
+    let name = get_input("Project Name", project_directory);
+    let version = get_input("Version", project_directory);
+    let authors: Vec<String> = get_input("Author", "").split_whitespace().map(str::to_string).collect();
+    let description = get_input("Description", "");
+
+    //RosettaConfig
+    let runtime = get_input("Runtime", "deepcore/rosetta_runtime");
+    let controller = get_input("Controller", "deepcore/rosetta_controller");
+    let max_workers: usize = get_input("Max Workers", "4").parse().unwrap();
+    let containers: Vec<String> = get_input("Containers", "").split_whitespace().map(str::to_string).collect();
+
 
     println!
     ("\n\
     Project Name: {}\n\
     Project Version: {}\n\
-    Author: {}\n\
+    Authors: {:?}\n\
     Description: {}",
-     project_name,
-     project_version,
-     project_author,
-     project_description
+     name,
+     version,
+     authors,
+     description
     );
-
-
-
-
-
-
-
+    let mut configuration: Config = Config {
+        information: Information {
+            name,
+            version,
+            description,
+            authors,
+        },
+        rosetta_config: RosettaConfig {
+            runtime,
+            controller,
+            max_workers,
+            containers
+        },
+        projects: HashMap::new()
+    };
     return true
 }
 
 fn new_config_file(path: PathBuf) {
     println!("new config working");
-    let project_name = common_commands::get_input("Project name? {}", path.file_name().unwrap().to_str().unwrap());
+    let project_name = get_input("Project name? {}", path.file_name().unwrap().to_str().unwrap());
 }
 
-struct Config {
-    id: String,
-    entry: String,
-    project_name: String,
-    modules: Vec<String>,
-    clients: Vec<String>,
-}
-
-mod common_commands {
-    use std::{cmp, io, str};
-    use std::io::{stdout, Write};
-    use std::process::exit;
-    extern crate termsize;
-
-    pub fn get_input(prompt: &str, default: &str) -> String{
-        let termsize::Size {rows, cols} = termsize::get().unwrap();
-        print!("{} [{}]: ",prompt, default);
-        stdout().flush().unwrap();
-        let mut input = String::new();
-        match io::stdin().read_line(&mut input) { Ok(..) => {}, Err(e) => {}, }
-        if input.trim() == "" {
-            stdout().flush().unwrap();
-            return default.to_string()
-        }
-        stdout().flush().unwrap();
-        input.trim().to_string()
-    }
-}

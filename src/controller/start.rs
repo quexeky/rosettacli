@@ -9,7 +9,6 @@ use serde_yaml;
 use serde_derive::Deserialize;
 use crate::controller::containers::container_interface;
 
-
 fn main() {
     let filename = Path::new("config.yaml");
     container_interface::spawn("rosetta");
@@ -30,31 +29,4 @@ fn main() {
         }
     };
     println!("{:?}", config);
-}
-
-#[derive(Deserialize, Debug)]
-struct Config {
-    information: Information,
-    rosetta_config: RosettaConfig,
-    projects: HashMap<String, Project>,
-}
-#[derive(Deserialize, Debug)]
-struct Information {
-    name: String,
-    version: String,
-    description: Option<String>,
-    authors: Option<Vec<String>>
-}
-#[derive(Deserialize, Debug)]
-struct RosettaConfig {
-    runtime: String,
-    controller: String,
-    max_workers: usize,
-    containers: Vec<String>,
-}
-
-#[derive(Deserialize, Debug)]
-struct Project {
-    container: String,
-    entry: Option<bool>
 }
