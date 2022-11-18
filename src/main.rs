@@ -68,6 +68,7 @@ fn validate_package_name(name: &str) -> Result<(), String> {
     }
 }
 fn main() {
+    /*
     let args = Arguments::parse();
     match args.cmd {
         SubCommand::New { silent, force, destination, overwrite} => {
@@ -76,5 +77,6 @@ fn main() {
         SubCommand::Package { install, remove, reinstall, destination} => {
             println!("install: {}, remove: {}, reinstall: {}", install.join(":"), remove.join(":"), reinstall.join(":"));
         }
-    }
+    }*/
+    packages::get_package("Hello World".to_string());
 }

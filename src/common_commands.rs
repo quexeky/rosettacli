@@ -1,5 +1,5 @@
-use std::{cmp, io, str};
-use std::io::{stdout, Write};
+use std::{ io, str };
+use std::io::{ stdout, Write };
 use std::process::exit;
 extern crate termsize;
 

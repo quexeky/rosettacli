@@ -15,3 +15,6 @@ serde_derive = "1.0.147"
 toml = "0.5.9"
 json = "0.12.4"
 serde_yaml = "0.9.14"
+indicatif = "0.17.2"
+futures-util = "0.3.25"
+reqwest = { version = "0.11.3", features = ["stream"] }

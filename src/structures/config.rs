@@ -29,4 +29,3 @@ pub struct Project {
     pub container: String,
     pub entry: Option<bool>
 }
-

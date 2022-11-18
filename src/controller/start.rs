@@ -8,6 +8,7 @@ use std::collections::HashMap;
 use serde_yaml;
 use serde_derive::Deserialize;
 use crate::controller::containers::container_interface;
+use crate::structures::config::*;
 
 fn main() {
     let filename = Path::new("config.yaml");
