@@ -18,3 +18,4 @@ serde_yaml = "0.9.14"
 indicatif = "0.17.2"
 futures-util = "0.3.25"
 reqwest = { version = "0.11.3", features = ["stream"] }
+tokio = { version = "1", features = ["macros", "rt-multi-thread"] }

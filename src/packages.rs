@@ -25,7 +25,7 @@ pub async fn download_file(client: &Client, url: &str, path: &str) -> Result<(),
         .template("{msg}\n{spinner:.green} [{elapsed_precise}] [{wide_bar:.cyan/blue}] {bytes}/{total_bytes} ({bytes_per_sec}, {eta})")
         .unwrap()
         .progress_chars("#>-"));
-    pb.set_message(&format!("Downloading {}", url));
+    pb.set_message(format!("Downloading {}", url).as_str().to_owned());
 
     // download chunks
     let mut file = File::create(path).or(Err(format!("Failed to create file '{}'", path)))?;
@@ -41,7 +41,7 @@ pub async fn download_file(client: &Client, url: &str, path: &str) -> Result<(),
         pb.set_position(new);
     }
 
-    pb.finish_with_message(&format!("Downloaded {} to {}", url, path));
+    pb.finish_with_message(format!("Downloaded {} to {}", url, path).as_str().to_owned());
     return Ok(());
 }
 

@@ -9,6 +9,7 @@ pub mod structures;
 
 use std::path::Path;
 use clap::{arg, Parser, Subcommand};
+use reqwest::Client;
 
 #[derive(Parser,Debug)]
 #[clap(author="quexeky", version, about="Rosetta argument parser")]
@@ -67,7 +68,8 @@ fn validate_package_name(name: &str) -> Result<(), String> {
         Ok(())
     }
 }
-fn main() {
+
+async fn main() {
     /*
     let args = Arguments::parse();
     match args.cmd {
@@ -78,5 +80,6 @@ fn main() {
             println!("install: {}, remove: {}, reinstall: {}", install.join(":"), remove.join(":"), reinstall.join(":"));
         }
     }*/
-    packages::get_package("Hello World".to_string());
+    let client = Client::new();
+    packages::download_file(&client,"https://cloud.decduck3.com/index.php/avatar/admin/64", "/home/quexeky/CLionProjects/rosettacli/RosettaProject").await?;
 }
